@@ -360,11 +360,12 @@ class PSOForARM(PSO):
             if ant and con:
                 sup += 1
         if sup_ant == 0 or sup_con == 0 or n_ant == 0 or n_con == 0:
-            return [0, 0, 0]
+            return [0, 0, 0, 0]
+        support = sup / self.n_transaction
         confidence = sup / sup_ant
         comprehensibility = math.log(n_con + 1) / math.log(n_ant + n_con + 1)
-        interestingness = confidence * (sup / sup_con) * (1 - sup / self.n_transaction)
-        return [confidence, comprehensibility, interestingness]
+        interestingness = confidence * (sup / sup_con) * (1 - support)
+        return [support, confidence, comprehensibility, interestingness]
 
 
 class FileIO(object):
@@ -373,17 +374,50 @@ class FileIO(object):
 
 
 if __name__ == "__main__":
-    data = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/BK.dat", dtype=np.float64, delimiter=',')
+    """Three data sets from "http://funapp.cs.bilkent.edu.tr/DataSets/".
+    HH: House_16H, attributes: 16, Size: 22784
+    QU: Quake, attributes: 4, Size: 2178
+    SP: Stock Prices, attributes: 10, Size: 950
+    """
+    HH = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/HH.dat", dtype=np.float64, delimiter=',')
+    QU = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/QU.dat", dtype=np.float64, delimiter=',')
+    SP = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/SP.dat", dtype=np.float64)
+    data = SP
     low = data.min(axis=0)
     high = data.max(axis=0)
-    p = PSOForARM(dataset=data, population=100, dimension=5, random_init=True, n_interval=30, iteration=100, lower_bound=low, upper_bound=high)
-    begin = datetime.datetime.now()
-    print("Begin time : %s" % begin)
-    p.run()
-    end = datetime.datetime.now()
-    print("Finish time : %s" % end)
-    print("Cost : %s" % (end - begin))
-    for record in Particle.global_best:
-        print(record['fit'])
-        out = np.array(record['pos'])
-        print(out.reshape(-1, 3))
+    """every parameter combination test time."""
+    time = 30
+    """set population every 10 from 0 to 200."""
+    populations = np.arange(0, 210, 10)
+    """set iteration every 100 from 0 to 2000."""
+    iterations = np.arange(0, 2100, 100)
+    ARs = []
+    fitness = []
+    runTimes = []
+    for population in populations:
+        print("Population: ", population)
+        timeTmp = []
+        fitTmp = np.zeros(4)
+        for t in range(time):
+            p = PSOForARM(dataset=data, population=population, dimension=10, random_init=True, n_interval=20,
+                          iteration=1000, lower_bound=low, upper_bound=high)
+            begin = datetime.datetime.now()
+            print("Test: ", t + 1)
+            print("Begin time : %s" % begin)
+            p.run()
+            end = datetime.datetime.now()
+            print("Finish time : %s" % end)
+            print("Cost : %s" % (end - begin).seconds)
+            timeTmp.append((end - begin).seconds)
+            for gb in Particle.global_best:
+                fitTmp += gb['fit']
+            # ARs.append(len(Particle.global_best))
+            # for record in Particle.global_best:
+            #     print(record['fit'])
+            #     out = np.array(record['pos'])
+            #     print(out.reshape(-1, 3))
+        runTimes.append(np.array(timeTmp).sum() / time)
+        fitness.append(fitTmp / time)
+        # print("Average:", np.array(ARs).sum() / time)
+    np.savetxt("C:/Users/Zhaoxuan/Desktop/sp_population_time.txt", runTimes, delimiter=',')
+    np.savetxt("C:/Users/Zhaoxuan/Desktop/sp_population_fitness.txt", fitness, delimiter=',')
