@@ -292,11 +292,19 @@ class PSO(object):
     def run(self):
         """Run PSO algorithm."""
         for i in range(self._iteration):
+            j = 0
             for particle in self._swarm:
+                j += 1
+                print(datetime.datetime.now(), "Iteration: ", i, " Particle: ", j)
+                print("Update fitness")
                 particle.update_fitness(self._fit(particle.get_position()))
+                print("Update local best")
                 particle.update_local_best()
+                print("Update global best")
                 particle.update_global_best()
+                print("Update velocity")
                 particle.update_velocity(self._w, self._c1, self._c2)
+                print("Update position")
                 particle.update_position()
 
 
@@ -379,18 +387,21 @@ if __name__ == "__main__":
     QU: Quake, attributes: 4, Size: 2178
     SP: Stock Prices, attributes: 10, Size: 950
     """
+    print("Begin time : %s" % datetime.datetime.now())
     HH = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/HH.dat", dtype=np.float64, delimiter=',')
     QU = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/QU.dat", dtype=np.float64, delimiter=',')
     SP = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/SP.dat", dtype=np.float64)
-    data = SP
+    data = np.loadtxt("C:/Users/Zhaoxuan/Desktop/pso_test_data.txt", dtype=np.float64, delimiter=',')
     low = data.min(axis=0)
     high = data.max(axis=0)
     """every parameter combination test time."""
-    time = 30
+    time = 1
     """set population every 10 from 0 to 200."""
-    populations = np.arange(0, 210, 10)
+    # populations = np.arange(0, 210, 10)
+    populations = [10]
     """set iteration every 100 from 0 to 2000."""
-    iterations = np.arange(0, 2100, 100)
+    # iterations = np.arange(0, 2100, 100)
+    iterations = [100]
     ARs = []
     fitness = []
     runTimes = []
@@ -399,8 +410,8 @@ if __name__ == "__main__":
         timeTmp = []
         fitTmp = np.zeros(4)
         for t in range(time):
-            p = PSOForARM(dataset=data, population=population, dimension=10, random_init=True, n_interval=20,
-                          iteration=1000, lower_bound=low, upper_bound=high)
+            p = PSOForARM(dataset=data, population=population, dimension=4, random_init=True, n_interval=20,
+                          iteration=100, lower_bound=low, upper_bound=high)
             begin = datetime.datetime.now()
             print("Test: ", t + 1)
             print("Begin time : %s" % begin)
