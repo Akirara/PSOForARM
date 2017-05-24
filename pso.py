@@ -296,8 +296,12 @@ class PSO(object):
             for particle in self._swarm:
                 j += 1
                 print(datetime.datetime.now(), "Iteration: ", i, " Particle: ", j)
-                print("Update fitness")
+                begin = datetime.datetime.now()
+                # print("Begin time : %s" % begin)
+                print("%s Update fitness" % begin)
                 particle.update_fitness(self._fit(particle.get_position()))
+                end = datetime.datetime.now()
+                print("Cost : %s" % (end - begin).seconds)
                 print("Update local best")
                 particle.update_local_best()
                 print("Update global best")
@@ -391,7 +395,8 @@ if __name__ == "__main__":
     HH = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/HH.dat", dtype=np.float64, delimiter=',')
     QU = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/QU.dat", dtype=np.float64, delimiter=',')
     SP = np.loadtxt("C:/Users/Zhaoxuan/Desktop/Data/SP.dat", dtype=np.float64)
-    data = np.loadtxt("C:/Users/Zhaoxuan/Desktop/pso_test_data.txt", dtype=np.float64, delimiter=',')
+    # data = np.loadtxt("C:/Users/Zhaoxuan/Desktop/pso_test_data/pso_test_data_200.txt", dtype=np.float64, delimiter=',')
+    data = QU
     low = data.min(axis=0)
     high = data.max(axis=0)
     """every parameter combination test time."""
@@ -411,22 +416,21 @@ if __name__ == "__main__":
         fitTmp = np.zeros(4)
         for t in range(time):
             p = PSOForARM(dataset=data, population=population, dimension=4, random_init=True, n_interval=20,
-                          iteration=100, lower_bound=low, upper_bound=high)
-            begin = datetime.datetime.now()
-            print("Test: ", t + 1)
-            print("Begin time : %s" % begin)
+                          iteration=10, lower_bound=low, upper_bound=high)
+            # begin = datetime.datetime.now()
+            # print("Begin time : %s" % begin)
             p.run()
-            end = datetime.datetime.now()
-            print("Finish time : %s" % end)
-            print("Cost : %s" % (end - begin).seconds)
-            timeTmp.append((end - begin).seconds)
+            # end = datetime.datetime.now()
+            # print("Finish time : %s" % end)
+            # print("Cost : %s" % (end - begin).seconds)
+            # timeTmp.append((end - begin).seconds)
             for gb in Particle.global_best:
                 fitTmp += gb['fit']
-            # ARs.append(len(Particle.global_best))
-            # for record in Particle.global_best:
-            #     print(record['fit'])
-            #     out = np.array(record['pos'])
-            #     print(out.reshape(-1, 3))
+            ARs.append(len(Particle.global_best))
+            for record in Particle.global_best:
+                print(record['fit'])
+                out = np.array(record['pos'])
+                print(out.reshape(-1, 3))
         runTimes.append(np.array(timeTmp).sum() / time)
         fitness.append(fitTmp / time)
         # print("Average:", np.array(ARs).sum() / time)
